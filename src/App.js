@@ -1,24 +1,50 @@
-import logo from './logo.svg';
+import React, {useState, useEffect} from 'react';
 import './App.css';
+import Header from './component/header';
+import Products from './component/products';
+import { useSnackbar } from "notistack";
+import Cart from './component/cart';
 
 function App() {
+  const [cart, setCart] = useState([]);
+  const [show, setShow] = useState(true);
+  const {enqueueSnackbar} = useSnackbar()
+
+
+  useEffect(() => {
+    const storedCart = JSON.parse(localStorage.getItem('cart'));
+    if (storedCart) {
+      setCart(storedCart);
+    }
+  }, []);
+
+  const handleClick = (item) => {
+    let isPresent = false;
+    cart.forEach((product) => {
+      if(item.id === product.id)
+      isPresent=true
+    })
+      if(isPresent){
+        enqueueSnackbar(
+          "Item already in cart. Use the cart sidebar to update quantity or remove item.",
+          {
+            variant: "warning",
+          })
+          return;
+      }
+      
+      setCart([...cart, {...item, quantity:1}]);
+  }
+
+
+  
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <React.Fragment>
+      <Header size={cart.length} setShow={setShow}/>
+      {
+        show ? <Products handleClick={handleClick}/> : <Cart cart={cart} setCart={setCart}  />
+      }
+      </React.Fragment>
   );
 }
 
